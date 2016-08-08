@@ -1,0 +1,1 @@
+1、Assert.assertEquals("Not equals!", 1.1, 1.2, 0.1);为什么测试结果为相等？
