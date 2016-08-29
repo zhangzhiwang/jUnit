@@ -82,6 +82,16 @@ public class Exercise_5 extends TestCase {
 
 		f.fastForward(f.currTimePos() + (f.getEot() - f.currTimePos()));
 		assertTrue(f.isEnd());
+		
+		f = new F(50.0f);
+		f.fastForward(5.0f);
+		assertEquals(5.0, f.currTimePos());
+		f.fastForward(10.0f);
+		f.rewind(10.0f);
+		assertEquals(5.0, f.currTimePos());
+		f.fastForward(46.0f);
+		f.rewind(46.0f);
+		assertEquals(4.0, f.currTimePos());
 	}
 
 	public void testRewind() {
@@ -103,10 +113,22 @@ public class Exercise_5 extends TestCase {
 
 		f.rewind(f.currTimePos() + (f.getEot() - f.currTimePos()));
 		assertTrue(f.isBegin());
+		
+		f = new F(50.0f);
+		f.fastForward(10.0f);
+		assertEquals(10.0f, f.currTimePos());
+		f.rewind(5.0f);
+		f.fastForward(5.0f);
+		assertEquals(10.0, f.currTimePos());
+		f.rewind(11.0f);
+		f.fastForward(11.0f);
+		assertEquals(11.0, f.currTimePos());
 	}
 
 	public void testCurrTimePos() {
-		assertTrue(f.currTimePos() >= 0.0f);
+		assertTrue(f.currTimePos() == f.getBot());
+		f.fastForward(5);
+		assertTrue(f.currTimePos() == 5.0f);
 		assertTrue(f.currTimePos() <= f.getEot());
 	}
 
@@ -133,6 +155,15 @@ public class Exercise_5 extends TestCase {
 		f.mark("1234");
 		assertEquals(2, f.getMarkMap().size());
 
+		f = new F(100.0f);
+		f.fastForward(50.0f);
+		f.mark("hello");
+		float sec50 = f.currTimePos();
+		f.fastForward(10.0f);
+		f.rewind(40.0f);
+		f.fastForward(10.0f);
+		f.goToMark("hello");
+		assertEquals(sec50, f.currTimePos());
 	}
 
 	public void testGoToMark() {
@@ -148,6 +179,41 @@ public class Exercise_5 extends TestCase {
 		} catch (Exception e) {
 			assertTrue(true);
 		}
+		try {
+			f.goToMark("123");
+			fail();
+		} catch (Exception e) {
+			assertTrue(true);
+		}
+
+		f.mark("123");
+		assertTrue(f.getMarkMap().get("123") >= 0.0f);
+		assertTrue(f.getMarkMap().get("123") <= f.getEot());
+		f.goToMark("123");
+		assertTrue(true);
+		try {
+			f.goToMark("456");
+			fail();
+		} catch (Exception e) {
+			assertTrue(true);
+		}
+		
+		f = new F(100.0f);
+		f.fastForward(50.0f);
+		f.mark("world");
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		f.goToMark("world");
+		assertEquals(50.0f, f.currTimePos());
+		
+		f = new F(100.0f);
+		f.fastForward(50.0f);
+		f.mark("aaa");
+		f.goToMark("aaa");
+		assertEquals(50.0f, f.currTimePos());
 	}
 }
 
@@ -164,6 +230,7 @@ interface E {
 }
 
 class F implements E {
+	private float bot;
 	private float eot;
 	private boolean isEnd;
 	private boolean isBegin;
@@ -174,6 +241,14 @@ class F implements E {
 
 	public F(float f) {
 		f = eot;
+	}
+
+	public float getBot() {
+		return bot;
+	}
+
+	public void setBot(float bot) {
+		this.bot = bot;
 	}
 
 	public Map<String, Float> getMarkMap() {
